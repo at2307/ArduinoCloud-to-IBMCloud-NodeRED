@@ -17,4 +17,8 @@ Before making any steps, it's worth having a look at:
 - and Working with environment variables : [cloud.ibm.com/docs/codeengine?topic=codeengine-envvar](https://cloud.ibm.com/docs/codeengine?topic=codeengine-envvar)
 
 **1st**
-…
+
+**(n)th**
+
+writing a simple query, reveals the record in a db:
+![Screenshot of flow](/2ibm_cloudant/nodered-scrnsht_03_cloudant.png)
