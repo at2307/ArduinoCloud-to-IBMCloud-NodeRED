@@ -1,4 +1,4 @@
-## from Arduino to … Cloudant (JSON document DBaaS)
+## (1) from Arduino to … Cloudant (JSON document DBaaS)
 
 To start the project we need _something_ (to receive, to store, and to make things talk to each other).
 For instance _something_ working on the IBM Cloud that will fetch our data. This _something_ could be e.g. a function triggered periodically, but we want this _something_ to do more and to provide a flexibility of changing or adding to the whole flow of data.
