@@ -5,7 +5,7 @@ To start the project we need _something_ (to receive, to store, and to make thin
 
 We do not want to be "writing" a server application, but we need _something_ that can act as a backend (or middleware if you prefer) app for us, so why not [Node-RED](https://nodered.org/)? A flow-based programming tool, to connect nodes that form a flow to accomplish what we want to do.
 
-If you read the docs you will find that one of the ways to run Node-RED on IBM Cloud is through the [IBM Cloud Code Engine](https://www.ibm.com/cloud/code-engine/) (deployment target) instance. So, for the purpose of this project, we will use following resources:
+If you read the docs you will find that one of the ways to run Node-RED on IBM Cloud is through the [IBM Cloud Code Engine](https://www.ibm.com/cloud/code-engine/) (deployment target) instance. So, for the purpose of this project, we will use the following resources:
 
 - [Arduino IoT Cloud](https://cloud.arduino.cc/how-it-works/) -- an online platform with data from our boards
 - [IBM Cloud : Code Engine](https://www.ibm.com/cloud/code-engine/) -- a serverless PaaS running a containerized app
