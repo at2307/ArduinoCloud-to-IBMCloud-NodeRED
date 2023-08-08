@@ -1,7 +1,7 @@
 **From Arduino Cloud to IBM Cloud () - containerized Node-RED on IBM Cloud**
 ## (1) from Arduino to … Cloudant (JSON document DBaaS)
 
-To start the project we need _something_ (to receive, to store, and to make things talk to each other).
+To start the project we need _something_ (to fetch, to store, and to make things talk to each other).
 
 We do not want to be "writing" a server application, but we need _something_ that can act as a backend (or middleware if you prefer) app for us, so why not [Node-RED](https://nodered.org/)? A flow-based programming tool, to connect nodes that form a flow to accomplish what we want to do.
 
@@ -16,31 +16,157 @@ If you read the docs you will find that one of the ways to run Node-RED on IBM C
 
 ### --1st-- Arduino Cloud
 
-From the [Arduino DOCS for Cloud REST API](https://docs.arduino.cc/arduino-cloud/getting-started/arduino-iot-api) we know that we need to authenticate with a `clientId` and `clientSecret`. Once logged in to Arduino Cloud, simply navigate to "[API keys](https://cloud.arduino.cc/home/api-keys/)" and click "CREATE API KEY" (note the values). For now, that's all we need.
+From the [Arduino DOCS for Cloud REST API](https://docs.arduino.cc/arduino-cloud/getting-started/arduino-iot-api) we know that we need to authenticate with a `clientId` and `clientSecret`. Once logged in to Arduino Cloud, simply navigating to "[API keys](https://cloud.arduino.cc/home/api-keys/)" we can "CREATE API KEY" (important to note the values). For now, that's all we need.
 
 ### --2nd-- IBM Cloud : Code Engine with Node-RED Docker image
 
-[...]
+In order to connect to Arduino Cloud and use our API key, we need to create an environment for our Node-RED app. So, we start with provisioning a Code Engine instance and specifying the Node-RED container image.
+
+> IBM Cloud > Create resource > Code Engine > [Start creating]
+
+> [Create project], (Application), (Name), Choose the code to run: Container image > Image reference: ` docker.io/nodered/node-red `
+
+> Listening port: ` 1880 ` (default for Node-RED)
+
+> specify the Resources and Domain mappings
+
+Also, worth considering are the Optional settings
+
+> the > Environment variables, and the > Image start options, as we will see later on.
+
+The below screenshot shows the running instance of Code Engine with the Node-RED app (in my case revision 3, as I played with the parameters).
+
+![Screenshot of Node-RED on Code Engine](/2ibm_cloudant/nodered-on-CodeEngine-scrnsht_01.png)
+
+The Application link can be found in two places:
+
+1. in the list of Applications for our Code Engine instance
+
+> Code Engine instane > Applications > (Application link)
+
+2. in the Domain mappings of the Application
+
+> Code Engine instane > Applications > 'our nodered app' > (Domain mappings)
+
+The first time we visit our Node-RED app, we should see a "Welcome" box… and a blank Workspace with a "WARNING" Comment.
+
+![Screenshot of Node-RED warning](/2ibm_cloudant/nodered-on-CodeEngine-warning-scrnsht_01.png)
+
+Consider the warning.
 
 ### --3rd-- Node-RED with Arduino-iot-cloud node
 
-Of interest: [Arduino iot-api Javascript client](https://www.npmjs.com/package/@arduino/arduino-iot-client/)
-```
-client_id: 'YOUR_CLIENT_ID'
-client_secret: 'YOUR_CLIENT_SECRET'
-```
+Having the Node-RED running and accessible from the Application link, we can start creating our flow.
+For our project we can simply use the available [@arduino/node-red-contrib-arduino-iot-cloud](https://github.com/arduino/node-red-contrib-arduino-iot-cloud) contribution node - for us, this is perfectly fine for now.
+
+Installing the node, can be simply done through:
+
+> Node-RED header > main menu > Manage palette > Install
+
+Search for 'arduino' and [install] the @arduino/node-red-contrib-arduino-iot-cloud
+
+Configuring the node is [straightforward](https://flows.nodered.org/node/@arduino/node-red-contrib-arduino-iot-cloud) and this is where we use our `clientId` and `clientSecret` from Arduino Cloud.
 
 ### --4th-- IBM Cloud : Cloudant
 
-[...]
+DOCS:
+- [IBM Cloud : Cloudant](https://www.ibm.com/products/cloudant/) DOCS -- https://cloud.ibm.com/docs/Cloudant/
+
+**Database considerations**
+
+What we want to do here, fits well with Cloudant:
+- we are working with JSON objects;
+- everything we need (data wise) is in the object;
+- each document is of small size;
+- following "write only" design pattern (where documents are only added to a database and not updated);
+- our data model consists of objects that are separate documents (referencing the device ID);
+- our simple object:
+```JSON
+{
+	"dev": 12345678,
+	"timestamp": 0,
+	"lat": 0.00000,
+	"lon": 0.00000,
+	"acc": 0.00000
+}
+```
+Where: ` "timestamp" ` -- Unix timestamp; ` "lat" ` & ` "lon" ` -- our gps values as in WGS84, in decimal degrees.
+
+Since it is a JSON Document database, we do not need to worry about preparing a schema for our database. "Any" structure in a document will be accepted. However, the data model matters, so does the [date format](https://medium.com/@glynn_bird/date-formats-for-apache-couchdb-and-cloudant-1c017b7b878b), as well as indexing.
+
+Worth looking at:
+- [Data modeling](https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-data-modeling)
+- [Date formats](https://blog.cloudant.com/2018/05/22/Date-formats.html)
+- [Working with IBM Cloudant Query](https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-query)
+- [Creating a search engine - IBM Cloudant Search](https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-dig-deeper-dashboard#create-search-engine)
+- [Using IBM Cloudant Search](https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-cloudant-search)
+
+**Provisioning an instance & Service Credentials**
+
+> IBM Cloud > Create resource > Cloudant
+
+Simple, as in [cloud.ibm.com/docs/Cloudant?topic=Cloudant-getting-started-with-cloudant](https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-getting-started-with-cloudant).
+
+To use the service we will need service credentials, and we will use IBM's IAM API Keys and Tokens.
+"*You can generate an IAM token by using either your IBM Cloud API key or a **service ID's API key**.*" [Generating an IBM Cloud IAM token by using an API key](https://cloud.ibm.com/docs/account?topic=account-iamtoken_from_apikey). Check also: [Invoking IBM Cloud service APIs](https://cloud.ibm.com/docs/account?topic=account-iamapikeysforservices).
+
+What we are interested at the moment, is generating an API key for the Service - which we will use in our next node.
+
+Have a look at [Locating your service credentials / Understanding your service credentials](https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-locating-your-service-credentials)
+
+The ready instance (with Service credentials):
+
+![Screenshot of Cloudant instance](/2ibm_cloudant/Cloudant-scrnsht_01.png)
+
+**Cloudant Search Index**
+
+[Cloudant Search Index](https://cloud.ibm.com/docs/Cloudant?topic=Cloudant-cloudant-search) is built on Apache Lucene, and it's definitely a subject worth exploring, but for now let's say we want to index the timestamps (yes, as these are unique values and something we want to perform a search on). We create it by supplying a JavaScript function.
+
+> in the Cloudant Dashboard, in our database > Design Documents > Add > New Search Index
+
+```JavaScript
+function (doc) {
+	if (typeof doc.timestamp === 'number') {
+		index("timestamp", doc.timestamp, {"store": true});
+	}
+}
+```
+
+> Analyzer set to ` Keyword ` as we do not want it to be "tokenized", at all.
 
 ### --5th-- Node-RED with cloudantplus node
 
-[...]
+Installing the [node-red-contrib-cloudantplus](https://github.com/hammoaj/node-red-contrib-cloudantplus) node:
 
-The [node-red-contrib-cloudantplus](https://github.com/hammoaj/node-red-contrib-cloudantplus) node uses [IBM Cloudant Node.js SDK](https://www.npmjs.com/package/@ibm-cloud/cloudant)
+> Node-RED header > main menu > Manage palette > Install
 
-of interest: [github.com/IBM/cloudant-node-sdk](https://github.com/IBM/cloudant-node-sdk#authentication-with-environment-variables) - useful if setting (yes) environmental variables for IAM authentication `CLOUDANT_URL=<url>`.
+Search for 'cloudantplus' and [install] the node-red-contrib-cloudantplus
+
+Configuring the node is also straightforward and usage is described [here](https://flows.nodered.org/node/node-red-contrib-cloudantplus), and in the help of the nodes.
+
+The configuration node handles the authentication for us, all we need to do is to provide the Host (External endpoint of our Cloudant instance) and the generated API Key.
+
+We can paste these directly into the configuration node, however, since this node uses [IBM Cloudant Node.js SDK](https://www.npmjs.com/package/@ibm-cloud/cloudant), it means that we can make use of setting the environmental variables for IAM authentication ` CLOUDANT_URL=<url> ` and ` CLOUDANT_APIKEY=<apikey> ` - as decribed in [here](https://github.com/IBM/cloudant-node-sdk#authentication-with-environment-variables).
+
+The env variables we add to our Application configuration (on Code Engine instance), and we can do that in the IBM Cloud console UI.
+
+> Code Engine instance > Applications > 'our nodered app' > Configuration > Environment variables
+
+![Screenshot of Code Engine Configuration](/2ibm_cloudant/nodered-on-CodeEngine-envVar-scrnsht_01.png)
+
+In the cloudantplus configuration node we use these variables with ` ${CLOUDANT_URL} ` and ` ${CLOUDANT_APIKEY} ` instead of the credentials.
+
+**Preparing the final message to be sent**
+
+With Node-RED we have the flexibility of modifying data in the flow as we like. For our 'cloudantplus out' node we can configure the msg.payload in the preceding node, easily reshaping it. I chose to add a timestamp (with current time) to the object.
+
+```javascript
+msg.payload = { dev, "timestamp": Date.now(), lat, lon, acc };
+```
+
+The object being sent (whole msg object or payload as object) can be configured in the properties of the 'cloudantplus out' node.
+
+Once set, when triggered, the msg.payload travelling from the arduino-iot-cloud node, modified on the way, and coming into our cloudant-node, is sent to the Cloudant instance on IBM Cloud.
 
 ### --6th-- the whole flow
 
@@ -50,12 +176,15 @@ The whole flow in Node-RED, showing the data inserted into Cloudant db (as seen 
 
 A record in our db:
 
-![Screenshot of flow](/2ibm_cloudant/nodered-scrnsht_02_cloudant.png)
+![Screenshot of cloudant db](/2ibm_cloudant/nodered-scrnsht_02_cloudant.png)
 
-Writing a simple query, reveals the record:
+Writing a simple query, reveals the record of interest:
 
-![Screenshot of flow](/2ibm_cloudant/nodered-scrnsht_03_cloudant.png)
+![Screenshot of cloudant query](/2ibm_cloudant/nodered-scrnsht_03_cloudant.png)
 
+### SUMMARY
+
+This accomplishes part(1) of what I am after with the project, that is, it gets the data from my boards (via Arduino Cloud) to IBM Cloud, at the moment to Cloudant db. The flow happens automatically, recurrently fetching the data from Arduino Cloud at the specified interval. Our db is slowly growing.
 
 ### --additionally--
 
@@ -68,6 +197,7 @@ For reference:
 
 - Arduino DOCS for Cloud REST API : [docs.arduino.cc/arduino-cloud/getting-started/arduino-iot-api/](https://docs.arduino.cc/arduino-cloud/getting-started/arduino-iot-api/)
 - ( Arduino IoT Cloud API Reference ) : [arduino.cc/reference/en/iot/api/](https://www.arduino.cc/reference/en/iot/api/)
+- Node-RED User Guide : [nodered.org/docs/user-guide/](https://nodered.org/docs/user-guide/)
 - Node-RED with Arduino IoT Cloud : [docs.arduino.cc/arduino-cloud/features/nodered/](https://docs.arduino.cc/arduino-cloud/features/nodered/)
 - IBM Cloud IAM (with Identities, Resources, and API keys for service IDs) : [cloud.ibm.com/docs/account?topic=account-iamoverview/](https://cloud.ibm.com/docs/account?topic=account-iamoverview/)
 - IBM Cloud : Code Engine DOCS : [cloud.ibm.com/docs/codeengine/](https://cloud.ibm.com/docs/codeengine/)
