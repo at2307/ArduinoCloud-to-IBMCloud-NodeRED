@@ -20,4 +20,4 @@ Starting point links:
  - IBM Cloud CLI : [cloud.ibm.com/docs/cli/](https://cloud.ibm.com/docs/cli/)
  - IBM Cloud Catalog : [cloud.ibm.com/catalog?search=label%3Aibm_created](https://cloud.ibm.com/catalog?search=label%3Aibm_created)
 
-As it is my own endeavour, I am the sole contributor and maintainer of this particular project, though I am taking a lot from the community.
+<!-- As it is my own endeavour, I am the sole contributor and maintainer of this particular project, though I am taking a lot from the community. -->
