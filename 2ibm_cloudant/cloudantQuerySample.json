@@ -1,0 +1,26 @@
+{
+  "selector": {
+    "$and": [
+      {
+        "timestamp": {
+          "$gt": 1691359200000
+        }
+      },
+      {
+        "dev": 23070002
+      }
+    ]
+  },
+  "fields": [
+    "dev",
+    "timestamp",
+    "lat",
+    "lon"
+  ],
+  "sort": [
+    {
+      "timestamp": "desc"
+    }
+  ],
+  "limit": 50
+}
