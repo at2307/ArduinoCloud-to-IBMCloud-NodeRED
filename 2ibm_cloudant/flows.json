@@ -1,0 +1,546 @@
+[
+    {
+        "id": "22bcbf0165577f70",
+        "type": "tab",
+        "label": "Flow_PROD",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "420ba323244b606a",
+        "type": "group",
+        "z": "22bcbf0165577f70",
+        "name": "device_01",
+        "style": {
+            "stroke": "#3f93cf",
+            "fill": "#bfdbef",
+            "label": true,
+            "color": "#0070c0"
+        },
+        "nodes": [
+            "0c46a6df77de5ec0",
+            "427b7cc5def75452",
+            "39b66398a4a928bc",
+            "c9ede79e77a8a193",
+            "0080e991198c1b2c",
+            "5a5ef976bd94dd4d",
+            "12c0a050fba6ccd3",
+            "26e144537c6b6dcd",
+            "8cbdac4108724bf2"
+        ],
+        "x": 14,
+        "y": 19,
+        "w": 1072,
+        "h": 202
+    },
+    {
+        "id": "3613d9e2fb0f67bd",
+        "type": "group",
+        "z": "22bcbf0165577f70",
+        "name": "device_02",
+        "style": {
+            "stroke": "#3f93cf",
+            "fill": "#bfdbef",
+            "label": true,
+            "color": "#0070c0"
+        },
+        "nodes": [
+            "fdd9c330948fcd4b",
+            "a9fd7f28e59145b3",
+            "549234582702002f",
+            "9b08ea20da0b3b5c",
+            "ad642853131ea954",
+            "d58ccdbf38af55e4",
+            "4e7ecb26f3714de7",
+            "4eb8f05942ede825",
+            "25d121403a6bcf06"
+        ],
+        "x": 14,
+        "y": 239,
+        "w": 1072,
+        "h": 202
+    },
+    {
+        "id": "0c46a6df77de5ec0",
+        "type": "inject",
+        "z": "22bcbf0165577f70",
+        "g": "420ba323244b606a",
+        "name": "true",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "300",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "10",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 110,
+        "y": 120,
+        "wires": [
+            [
+                "26e144537c6b6dcd",
+                "427b7cc5def75452"
+            ]
+        ]
+    },
+    {
+        "id": "427b7cc5def75452",
+        "type": "property in push",
+        "z": "22bcbf0165577f70",
+        "g": "420ba323244b606a",
+        "connection": "a59e9b3fe03fd742",
+        "thing": "e16584c0-a002-4919-bbbb-2b55f602777a",
+        "property": "fe20121a-936a-49f5-9a41-81852a04e2e6",
+        "name": "Gps",
+        "propname": "Gps",
+        "defaultname": true,
+        "x": 370,
+        "y": 120,
+        "wires": [
+            [
+                "8cbdac4108724bf2"
+            ]
+        ]
+    },
+    {
+        "id": "39b66398a4a928bc",
+        "type": "comment",
+        "z": "22bcbf0165577f70",
+        "g": "420ba323244b606a",
+        "name": "fetching data from Arduino Cloud",
+        "info": "",
+        "x": 330,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "c9ede79e77a8a193",
+        "type": "function",
+        "z": "22bcbf0165577f70",
+        "g": "420ba323244b606a",
+        "name": "timestamp",
+        "func": "var dev = 23070001;\nvar lat = msg.payload.Gps.lat;\nvar lon = msg.payload.Gps.lon;\nvar acc = msg.payload.Accelerometer_Linear;\nmsg.payload = { dev, \"timestamp\": Date.now(), lat, lon, acc };\nmsg.topic = \"merged\";\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 730,
+        "y": 120,
+        "wires": [
+            [
+                "5a5ef976bd94dd4d"
+            ]
+        ]
+    },
+    {
+        "id": "0080e991198c1b2c",
+        "type": "comment",
+        "z": "22bcbf0165577f70",
+        "g": "420ba323244b606a",
+        "name": "add timestamp",
+        "info": "",
+        "x": 720,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "2617d3f1df35c3f0",
+        "type": "cloudantplus in",
+        "z": "22bcbf0165577f70",
+        "name": "retrieve from cloudant",
+        "cloudant": "1eb3223166e0c232",
+        "database": "test_db2",
+        "service": "_ext_",
+        "search": "_query_",
+        "design": "",
+        "index": "",
+        "x": 980,
+        "y": 480,
+        "wires": [
+            [
+                "a8c7dd9bf882fac7"
+            ]
+        ]
+    },
+    {
+        "id": "a51022aea90eea59",
+        "type": "debug",
+        "z": "22bcbf0165577f70",
+        "name": "debug cloudant1 resp",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1240,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "f756cef4c2b2cb40",
+        "type": "inject",
+        "z": "22bcbf0165577f70",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 530,
+        "y": 480,
+        "wires": [
+            [
+                "33eccb56fad4f290"
+            ]
+        ]
+    },
+    {
+        "id": "5a5ef976bd94dd4d",
+        "type": "cloudantplus out",
+        "z": "22bcbf0165577f70",
+        "g": "420ba323244b606a",
+        "name": "insert to cloudant",
+        "cloudant": "1eb3223166e0c232",
+        "database": "test_db2",
+        "service": "_ext_",
+        "payonly": true,
+        "operation": "insert",
+        "x": 970,
+        "y": 120,
+        "wires": [
+            [
+                "a51022aea90eea59"
+            ]
+        ]
+    },
+    {
+        "id": "d6ccfab6fb34ca56",
+        "type": "comment",
+        "z": "22bcbf0165577f70",
+        "name": "check (debug)",
+        "info": "",
+        "x": 370,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "12c0a050fba6ccd3",
+        "type": "debug",
+        "z": "22bcbf0165577f70",
+        "g": "420ba323244b606a",
+        "name": "debug request",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "26e144537c6b6dcd",
+        "type": "property in push",
+        "z": "22bcbf0165577f70",
+        "g": "420ba323244b606a",
+        "connection": "a59e9b3fe03fd742",
+        "thing": "e16584c0-a002-4919-bbbb-2b55f602777a",
+        "property": "61b3b389-8cb1-4b30-9958-b577b8d17b12",
+        "name": "Accelerometer_Linear",
+        "propname": "Accelerometer_Linear",
+        "defaultname": true,
+        "x": 320,
+        "y": 180,
+        "wires": [
+            [
+                "8cbdac4108724bf2"
+            ]
+        ]
+    },
+    {
+        "id": "8cbdac4108724bf2",
+        "type": "join",
+        "z": "22bcbf0165577f70",
+        "g": "420ba323244b606a",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 550,
+        "y": 120,
+        "wires": [
+            [
+                "c9ede79e77a8a193"
+            ]
+        ]
+    },
+    {
+        "id": "fdd9c330948fcd4b",
+        "type": "inject",
+        "z": "22bcbf0165577f70",
+        "g": "3613d9e2fb0f67bd",
+        "name": "true",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "300",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "160",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 110,
+        "y": 340,
+        "wires": [
+            [
+                "4eb8f05942ede825",
+                "a9fd7f28e59145b3"
+            ]
+        ]
+    },
+    {
+        "id": "a9fd7f28e59145b3",
+        "type": "property in push",
+        "z": "22bcbf0165577f70",
+        "g": "3613d9e2fb0f67bd",
+        "connection": "a59e9b3fe03fd742",
+        "thing": "942dc979-126d-42c5-9454-1e8178dc8612",
+        "property": "0c8d5acd-c140-4979-83fb-848cb810dae8",
+        "name": "Gps",
+        "propname": "Gps",
+        "defaultname": true,
+        "x": 370,
+        "y": 340,
+        "wires": [
+            [
+                "25d121403a6bcf06"
+            ]
+        ]
+    },
+    {
+        "id": "549234582702002f",
+        "type": "comment",
+        "z": "22bcbf0165577f70",
+        "g": "3613d9e2fb0f67bd",
+        "name": "fetching data from Arduino Cloud",
+        "info": "",
+        "x": 330,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "9b08ea20da0b3b5c",
+        "type": "function",
+        "z": "22bcbf0165577f70",
+        "g": "3613d9e2fb0f67bd",
+        "name": "timestamp",
+        "func": "var dev = 23070002;\nvar lat = msg.payload.Gps.lat;\nvar lon = msg.payload.Gps.lon;\nvar acc = msg.payload.Accelerometer_Linear;\nmsg.payload = { dev, \"timestamp\": Date.now(), lat, lon, acc };\nmsg.topic = \"merged\";\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 730,
+        "y": 340,
+        "wires": [
+            [
+                "d58ccdbf38af55e4"
+            ]
+        ]
+    },
+    {
+        "id": "ad642853131ea954",
+        "type": "comment",
+        "z": "22bcbf0165577f70",
+        "g": "3613d9e2fb0f67bd",
+        "name": "add timestamp",
+        "info": "",
+        "x": 720,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "d58ccdbf38af55e4",
+        "type": "cloudantplus out",
+        "z": "22bcbf0165577f70",
+        "g": "3613d9e2fb0f67bd",
+        "name": "insert to cloudant",
+        "cloudant": "1eb3223166e0c232",
+        "database": "test_db2",
+        "service": "_ext_",
+        "payonly": true,
+        "operation": "insert",
+        "x": 970,
+        "y": 340,
+        "wires": [
+            [
+                "07a5e02164cafe0b"
+            ]
+        ]
+    },
+    {
+        "id": "4e7ecb26f3714de7",
+        "type": "debug",
+        "z": "22bcbf0165577f70",
+        "g": "3613d9e2fb0f67bd",
+        "name": "debug request",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "4eb8f05942ede825",
+        "type": "property in push",
+        "z": "22bcbf0165577f70",
+        "g": "3613d9e2fb0f67bd",
+        "connection": "a59e9b3fe03fd742",
+        "thing": "942dc979-126d-42c5-9454-1e8178dc8612",
+        "property": "b00e76f4-5dc4-4dfe-b5f4-8c325187f3b1",
+        "name": "Accelerometer_Linear",
+        "propname": "Accelerometer_Linear",
+        "defaultname": true,
+        "x": 320,
+        "y": 400,
+        "wires": [
+            [
+                "25d121403a6bcf06"
+            ]
+        ]
+    },
+    {
+        "id": "25d121403a6bcf06",
+        "type": "join",
+        "z": "22bcbf0165577f70",
+        "g": "3613d9e2fb0f67bd",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 550,
+        "y": 340,
+        "wires": [
+            [
+                "9b08ea20da0b3b5c"
+            ]
+        ]
+    },
+    {
+        "id": "33eccb56fad4f290",
+        "type": "function",
+        "z": "22bcbf0165577f70",
+        "name": "query (get newest object)",
+        "func": "msg.payload = {\n    \"selector\": {\n        \"timestamp\": {\n            \"$gt\": (Date.now() - 900000)\n        }\n    },\n    \"sort\": [\n        {\n            \"timestamp\": \"desc\"\n        }\n    ],\n    \"limit\": 1\n};\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 730,
+        "y": 480,
+        "wires": [
+            [
+                "2617d3f1df35c3f0"
+            ]
+        ]
+    },
+    {
+        "id": "a8c7dd9bf882fac7",
+        "type": "debug",
+        "z": "22bcbf0165577f70",
+        "name": "debug from",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1230,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "07a5e02164cafe0b",
+        "type": "debug",
+        "z": "22bcbf0165577f70",
+        "name": "debug cloudant2 resp",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1240,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "a59e9b3fe03fd742",
+        "type": "arduino-connection",
+        "applicationname": "TestRead"
+    },
+    {
+        "id": "1eb3223166e0c232",
+        "type": "cloudantplus",
+        "host": "${CLOUDANT_URL}",
+        "name": "CloudantAPI",
+        "useapikey": true
+    }
+]
