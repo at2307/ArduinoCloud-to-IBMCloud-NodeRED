@@ -110,7 +110,7 @@ Have a look at [Locating your service credentials / Understanding your service c
 
 The ready instance (with Service credentials):
 
-![Screenshot of Cloudant instance](/2ibm_cloudant/Cloudant-scrnsht_01.png)
+![Screenshot of Cloudant instance](/2ibm_cloudant/other/Cloudant-scrnsht_01.png)
 
 ### --5th-- Node-RED with cloudantplus node
 
