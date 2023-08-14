@@ -28,11 +28,13 @@ In order to connect to Arduino Cloud and use our API key, we need to create an e
 
 > Listening port: ` 1880 ` (default for Node-RED)
 
-> specify the Resources and Domain mappings
+- ["What do I need to know about ports for apps in Code Engine?"](https://cloud.ibm.com/docs/codeengine?topic=codeengine-application-workloads#deploy-app-ports)
 
-Also, worth considering are the Optional settings
+The Resources, Domain mappings, and Optional settings can be left as they are at the moment. Although they are worth considering in the broader picture:
 
-> the > Environment variables, and the > Image start options, as we will see later on.
+1) Resources usage **may incur costs**, so thought should be given to it. For our test project, setting the minimum (0.125 vCPU / 0.25 GB memory) is more than enough. There is a little bit of Free usage, but running our simple app for days/weeks can still incur costs.
+
+2) Our app in Code Engine can be started with commands and arguments, which might be helpful. It can also work with **environment variables** and take advantage of something called "**configmaps**" and "**secrets**".
 
 The below screenshot shows the running instance of Code Engine with the Node-RED app (in my case revision 3, as I played with the parameters).
 
@@ -52,7 +54,7 @@ The first time we visit our Node-RED app, we should see a "Welcome" box… and a
 
 ![Screenshot of Node-RED warning](/2ibm_cloudant/assets_png/nodered-on-CodeEngine-scrnsht_02.png)
 
-Consider the warning.
+Consider the warning. We need to have somewhere to store our NodeRED flows and configuration, and be able to read it when starting the app. For a test run we can ignore it and build our flow, but later we should consider it and provide some kind of a storage to keep our app running withstanding e.g. container restarts.
 
 ### --3rd-- Node-RED with Arduino-iot-cloud node
 
@@ -124,13 +126,68 @@ Configuring the node is also straightforward and usage is described [here](https
 
 The configuration node handles the authentication for us, all we need to do is to provide the Host (External endpoint of our Cloudant instance) and the generated API Key.
 
-We can paste these directly into the configuration node, however, since this node uses [IBM Cloudant Node.js SDK](https://www.npmjs.com/package/@ibm-cloud/cloudant), it means that we can make use of setting the environmental variables for IAM authentication ` CLOUDANT_URL=<url> ` and ` CLOUDANT_APIKEY=<apikey> ` - as decribed in [here](https://github.com/IBM/cloudant-node-sdk#authentication-with-environment-variables).
+We could paste these directly into the configuration node, however, this time we will take a different approach. As mentioned, our app in Code Engine can work with environment variables. In the IBM Cloud console UI go to:
 
-The env variables we add to our Application configuration (on Code Engine instance), and we can do that in the IBM Cloud console UI.
+> Code Engine / Projects > 'our project' > Applications > 'our nodered app' > Configuration > Environment variables
 
-> Code Engine instance > Applications > 'our nodered app' > Configuration > Environment variables
+- ["Creating and running your app with environment variables"](https://cloud.ibm.com/docs/codeengine?topic=codeengine-application-workloads#app-option-envvar)
 
-![Screenshot of Code Engine Configuration](/2ibm_cloudant/assets_png/nodered-on-CodeEngine-scrnsht_03.png)
+- ["Working with environment variables"](https://cloud.ibm.com/docs/codeengine?topic=codeengine-envvar)
+
+So, we could use env vars directly to store our Cloudant credentials, and these would be hidden from the outside world.
+But, they would still show up when revealing the Configuration / Environment_variables tab in the console, or in the cli, e.g. when called for details with ` ibmcloud ce app get --name <our nodered app> `
+
+This prints out on the screen details, including our env variables (with their values), which is not what we want:
+
+```bash
+Name:               <our nodered app>
+ID:                 (...)
+Project Name:       CodeEngine-NodeRED  
+[...]
+Environment Variables:
+  Type     Name             Value  
+  Literal  CE_APP           <our nodered app>
+  Literal  CE_DOMAIN        (...).codeengine.appdomain.cloud
+  Literal  CE_SUBDOMAIN     (...)
+  Literal  CLOUDANT_APIKEY  (***************************)
+[...]
+```
+
+So, we will make use of "configmaps" and "secrets".
+
+> Code Engine / Projects > 'our project' > Secrets and configmaps > Create : Configmap
+
+for our CLOUDANT_URL
+
+> Code Engine / Projects > 'our project' > Secrets and configmaps > Create : Secret
+
+for our CLOUDANT_APIKEY
+
+And we will use them by adding environment variables to our Configuration:
+
+> Code Engine / Projects > 'our project' > Applications > 'our app' > Configuration >
+
+> Environment variables : Edit and create new revision > Add environment variable
+
+and defining them accordingly to what we created above.
+
+The resulting Configuration:
+
+![Screenshot of Code Engine Configuration](/2ibm_cloudant/assets_png/nodered-on-CodeEngine-scrnsht_03b.png)
+
+and ` ibmcloud ce app get --name <our nodered app> ` prints:
+
+```bash
+[...]
+Environment Variables:    
+  Type                     Name             Value  
+  Literal                  CE_APP           <our nodered app>
+  Literal                  CE_DOMAIN        (...).codeengine.appdomain.cloud  
+  Literal                  CE_SUBDOMAIN     (...)
+  Secret key reference     CLOUDANT_APIKEY  secret-values.CLOUDANT_APIKEY  
+  ConfigMap key reference  CLOUDANT_URL     config-values.CLOUDANT_URL  
+[...]
+```
 
 In the cloudantplus configuration node we use these variables with ` ${CLOUDANT_URL} ` and ` ${CLOUDANT_APIKEY} ` instead of the credentials.
 
@@ -218,9 +275,15 @@ Writing a simple query, reveals the record of interest:
 
 ![Screenshot of cloudant query](/2ibm_cloudant/assets_png/nodered-on-CodeEngine-scrnsht_06_cloudant.png)
 
-### SUMMARY
+### --SUMMARY--
 
-This accomplishes part(1) of what I am after with the project, that is, it gets the data from my boards (via Arduino Cloud) to IBM Cloud, at the moment to Cloudant. The flow happens automatically, recurrently fetching the data from Arduino Cloud at the specified interval. Our db is slowly growing. And we've done almost no coding!
+This accomplishes part(1) of what I am after with the project, that is, it gets the data from my boards (via Arduino Cloud) to IBM Cloud, at the moment to Cloudant. The above description documents -
+- provisioning of Code Engine instance with Node-RED running on it;
+- provisioning of Claudant instance, creating a simple index, and a query;
+- creating a flow in Node-RED using a couple of contribution nodes to make our introduction easier;
+- using "configmaps" and "secrets" with Code Engine to handle our Cloudant endpoint and api-key in the Node-RED flow.
+
+The flow happens automatically, recurrently fetching the data from Arduino Cloud at the specified interval. Our db is slowly growing. And we've done almost no coding!
 
 ### --additionally--
 
@@ -238,4 +301,3 @@ For reference:
 - IBM Cloud IAM (with Identities, Resources, and API keys for service IDs) : [cloud.ibm.com/docs/account?topic=account-iamoverview/](https://cloud.ibm.com/docs/account?topic=account-iamoverview/)
 - IBM Cloud : Code Engine DOCS : [cloud.ibm.com/docs/codeengine/](https://cloud.ibm.com/docs/codeengine/)
 - and Working with environment variables : [cloud.ibm.com/docs/codeengine?topic=codeengine-envvar](https://cloud.ibm.com/docs/codeengine?topic=codeengine-envvar)
-
