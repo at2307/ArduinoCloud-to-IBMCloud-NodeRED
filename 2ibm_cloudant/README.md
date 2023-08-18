@@ -287,7 +287,7 @@ The flow happens automatically, recurrently fetching the data from Arduino Cloud
 
 ### --additionally--
 
-The collected data in this project is a "Time-series data", so… not wanting an ever-growing Cloudant database, we are going to add the IBM Cloud Object Storage, following a timeboxed database pattern, as explained in "[Time-series Data Storage](https://blog.cloudant.com/2019/04/08/Time-series-data-storage.html)" article.
+The collected data in this project is a "Time-series data". Not wanting an ever-growing Cloudant database, we are going to add the IBM Cloud Object Storage (COS), following a timeboxed database pattern, as explained in "[Time-series Data Storage](https://blog.cloudant.com/2019/04/08/Time-series-data-storage.html)" article. But, that's not the only reason to have the data in COS.
 
 TO BE CONTINUED IN PART (2)
 
