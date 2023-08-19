@@ -47,13 +47,13 @@ The bucket in our COS instance:
 
 ### --2nd-- Functions
 
-With [IBM Cloud Functions](https://cloud.ibm.com/functions/), you can simply "Start Creating" from your IBM Cloud console UI.
+As with many products in IBM Cloud, we can work from IBM Cloud console UI, or from CLI. For [IBM Cloud Functions](https://cloud.ibm.com/functions/) we are going to use CLI. So, [install the CLI plug-in](https://cloud.ibm.com/docs/openwhisk?topic=openwhisk-cli_install).
 
 DOCS:
 - [Functions Concepts](https://cloud.ibm.com/functions/learn/concepts) - Namespaces, Actions, …
 - [Getting started with IBM Cloud Functions](https://cloud.ibm.com/docs/openwhisk?topic=openwhisk-getting-started)
 
-As always, it's good to [install the CLI plug-in](https://cloud.ibm.com/docs/openwhisk?topic=openwhisk-cli_install), and there are a couple of things to do, before writing an action code.
+We are going to write an action which we will call from Node-RED flow. This action will handle putting an object into COS. However, before writing an action code there are a couple of things to do.
 
 Our **action** will need configuration parameters (authentication, the service endpoint, and a bucket name), to work with COS.
 
@@ -107,7 +107,7 @@ The output:
         "key": "__bx_creds",
         "value": {
             "cloud-object-storage": {
-                [...]
+                [ ]
             }
         }
     }
@@ -131,30 +131,9 @@ However, for our project -
 
 Since in this sample function we are using [Buffer objects in Node.js](https://nodejs.org/api/buffer.html#buffer), from what I found searching for [Node Convert a JSON Object to Buffer](https://stackoverflow.com/search?q=Node+Convert+a+JSON+Object+to+Buffer), we need to stringify the json object with ` JSON.stringify ` , so our body param should look like this: ` Buffer.from(JSON.stringify(params.body)) ` in order to work.
 
-The whole of our action code:
+Our upload function:
 
 ```javascript
-const COS = require('ibm-cos-sdk')
-
-function cos_client (params) {
-  const bx_creds = params['__bx_creds']
-  if (!bx_creds) throw new Error('Missing __bx_creds parameter.')
-
-  const cos_creds = bx_creds['cloud-object-storage']
-  if (!cos_creds) throw new Error('Missing cloud-object-storage parameter.')
-
-  const endpoint = params['cos_endpoint']
-  if (!endpoint) throw new Error('Missing cos_endpoint parameter.')
-
-  const config = {
-    endpoint: endpoint,
-    apiKeyId: cos_creds.apikey,
-    serviceInstanceId: cos_creds.resource_instance_id
-  }
-
-  return new COS.S3(config);
-}
-
 function upload (params) {
   if (!params.bucket) throw new Error("Missing bucket parameter.")
   if (!params.name) throw new Error("Missing name parameter.")
@@ -171,11 +150,11 @@ function upload (params) {
 
   return client.upload(object).promise()
 }
-
-exports.upload = upload;
 ```
 
-Having this in a file, we can now create an action in our package, naming it ` upload-object ` :
+> (the whole code is available in the repository)
+
+Having this, we can now create an action in our package, naming it ` upload-object ` :
 
 ```bash
 ibmcloud fn action create cos-actions/upload-object action.js --main upload
