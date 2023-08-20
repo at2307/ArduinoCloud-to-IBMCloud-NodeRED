@@ -231,11 +231,10 @@ In the following 'http request' node we just need to specify the method (POST) a
 Having the token, we need to **prepare the body** and **headers** for our request of the action. We also need two parameters for our action: "body" and "name", which need to be put in the message payload. To the "body" we assign our "bundle" ` msg.payload.body = flow.get("bundle"); ` , and to the "name" we assign a name we want to give to our objects stored in COS - I will simply use a timestamp ` let num = Date.now(); msg.payload.name = num.toString() + '.json'; ` (which will be a time of requesting the action).
 
 ```javascript
-let receivedToken = msg.payload;
-var token = receivedToken.access_token;
+let receivedToken = msg.payload.access_token;
 msg.headers = {};
 msg.headers['Accept'] = 'application/json';
-msg.headers['authorization'] = 'Bearer' + token;
+msg.headers['authorization'] = 'Bearer' + receivedToken;
 msg.payload = {};
 msg.payload.body = flow.get("bundle");
 let num = Date.now();
