@@ -2,10 +2,10 @@
 
 <img src="2ibm_cloudant/assets_png/IBMCloud-NodeRed-Screenshot.png" width="320" align="right" />
 
-This repository documents my minute but coherent project :-) while exploring [IBM Cloud offerings](https://www.ibm.com/cloud/products/) …
-and contains code samples (flows and functions written).
+This repository documents my minute but coherent project, done while exploring [IBM Cloud offerings](https://www.ibm.com/cloud/products/) …
+and contains descriptions as well as code samples (flows and functions written).
 
-The idea behind this, is that I would like to get gps coordinates from my arduino boards, to the IBM Cloud, preferably with as little coding as possible (low-code programming), ready for Exploratory Data Analysis.
+The idea behind this, is that I would like to get gps coordinates from my arduino boards (that I am sending to Arduino Cloud), to the IBM Cloud. Preferably with as little coding as possible (low-code programming), ready for Exploratory Data Analysis.
 
 Documentation is divided into 2 parts:
 
