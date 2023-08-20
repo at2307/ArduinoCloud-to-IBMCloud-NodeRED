@@ -3,10 +3,9 @@
 
 As stated before, the collected data in this project is a "Time-series data". To avoid "large amounts" of data in our Cloudant database, we are going to add the IBM Cloud Object Storage (COS). Of course, our project is small at the moment, but as we are exploring, we would like to know how can we get our data from Cloudant to COS.
 
-There is an excellent article: [Using Cloud Object Storage from IBM Cloud Functions (Node.js)](https://jamesthom.as/2018/05/using-cloud-object-storage-from-ibm-cloud-functions-node.js/) by James Thomas.
-After reading through it, I've been encouraged to try to use Functions ([FaaS](https://www.ibm.com/topics/faas)) with an action that we could call from Node-RED flow, passing a data object to it. This seems to fit well with what we are trying to achieve.
+Additionally, COS can be queried, using SQL in the IBM Cloud **Data Engine**, which is of **interest** to us!
 
-Additionally, COS can be queried, using SQL in the IBM Cloud Data Engine, which is of interest to us!
+To get our data to COS, after reading an excellent article by James Thomas [Using Cloud Object Storage from IBM Cloud Functions (Node.js)](https://jamesthom.as/2018/05/using-cloud-object-storage-from-ibm-cloud-functions-node.js/), I've been encouraged to try to use Functions ([FaaS](https://www.ibm.com/topics/faas)) with an action that we could call from Node-RED flow, passing a data object to it. This seems to fit well with what we are trying to achieve.
 
 So, in this part(2) we are going to add the following resources:
 
@@ -287,7 +286,7 @@ The below screenshot shows the query and the result of it, that is 20 records wi
 
 ![Screenshot of Data Engine](/2ibm_cos/assets_png/IBMCloud-DataEngine-COS-Screenshot.png)
 
-The sample query:
+The query:
 
 ```sql
 WITH COS AS (
@@ -304,7 +303,7 @@ As we can see, we can even query many objects in COS at a time, using SQL, to fi
 
 ### --SUMMARY--
 
-This accomplishes part(2) of our project, that is, it gets our data from Cloudant and puts it in COS, using IBM Cloud Functions, and calling the action in Node-RED flow.
+This accomplishes part(2) of our project, that is, it gets our data from Cloudant and puts it in COS, with a help of an action from IBM Cloud Functions, calling it in our Node-RED flow.
 
 In the created flow, our action we call once every 4 hours, to copy all previous 4h records (json documents) from Cloudant to COS object. This allows us to use Data Engine to query COS.
 
